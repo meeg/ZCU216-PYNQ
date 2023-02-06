@@ -16,13 +16,16 @@ echo `date` > runtime.txt
 
 #source 2020.2.sh
 
- 
+# check that the Xilinx tools are configured
+hash vivado
+hash petalinux-util
+hash vitis
 
 export buildroot=`pwd`
 
 # NOTE link to your appropriate files here:
-prebuilt=/home/sara/Downloads/focal.aarch64.2.7.0_2021_11_17.tar.gz
-bsp=/home/sara/Downloads/xilinx-zcu216-v2020.2-final.bsp
+prebuilt=$PWD/focal.aarch64.2.7.0_2021_11_17.tar.gz
+bsp=$PWD/xilinx-zcu216-v2020.2-final.bsp
  
 
 if [ ! -e "$prebuilt" ]; then
@@ -34,18 +37,20 @@ if [ ! -e "$prebuilt" ]; then
 fi
 
  
+# make sure the PYNQ submodule is recursively cloned
+git submodule update --init
 
-if [ ! -d "ZCU216-PYNQ" ]; then
-
-    git clone --recursive https://github.com/sarafs1926/ZCU216-PYNQ
-
-fi
+#if [ ! -d "ZCU216-PYNQ" ]; then
+#
+#    git clone --recursive https://github.com/sarafs1926/ZCU216-PYNQ
+#
+#fi
 
  
 
-pushd ZCU216-PYNQ/ZCU216
+pushd ZCU216
 
-ln -s $bsp
+ln -sf $bsp
 
 popd
 
@@ -53,7 +58,7 @@ popd
 
 # git build.sh so that other boards are not rebuilt
 
-pushd ZCU216-PYNQ/PYNQ
+pushd PYNQ
 
 echo "" > build.sh
 
@@ -63,11 +68,11 @@ popd
 
  
 # move tics files to proper directory
-cp -a ZCU216-PYNQ/tics/. ZCU216-PYNQ/PYNQ/sdbuild/packages/xrfclk/package/xrfclk/
+cp -a tics/. PYNQ/sdbuild/packages/xrfclk/package/xrfclk/
 
-pushd ZCU216-PYNQ/PYNQ/sdbuild
+pushd PYNQ/sdbuild
 
-make BOARDDIR=$buildroot/ZCU216-PYNQ PREBUILT=$prebuilt
+make BOARDDIR=$buildroot PREBUILT=$prebuilt boot_files
 
  
 
